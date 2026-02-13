@@ -6,7 +6,29 @@ author: RajithSanjaya
 ---
 
 # AWS CLI Control Skill
+
 This skill manages AWS Lightsail instances.
+
+## Requirements
+
+- AWS CLI installed on host
+- AWS credentials configured (IAM user or role)
+- Environment variables:
+
+  - AWS_REGION
+  - ALLOWED_INSTANCES
+
+  ## Environment Variables
+
+This skill requires the following environment variables:
+
+- AWS_REGION (e.g., ap-southeast-1)
+- ALLOWED_INSTANCES (comma-separated list)
+
+Example:
+
+AWS_REGION=ap-southeast-1
+ALLOWED_INSTANCES=Ubuntu,Binami
 
 ## Available Operations
 
@@ -16,7 +38,7 @@ action: "list"
 
 Example:
 {
-  "action": "list"
+"action": "list"
 }
 
 ---
@@ -28,8 +50,8 @@ instance: "<instance-name>"
 
 Example:
 {
-  "action": "reboot",
-  "instance": "Ubuntu-1"
+"action": "reboot",
+"instance": "Ubuntu-1"
 }
 
 ---
