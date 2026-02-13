@@ -1,39 +1,72 @@
-import { exec } from "child_process";
+import { execFile } from "child_process";
 
-function runCommand(cmd) {
+const REGION = process.env.AWS_REGION || "";
+
+const ALLOWED_INSTANCES =
+  process.env.ALLOWED_INSTANCES?.split(",");
+
+function runAws(args) {
   return new Promise((resolve, reject) => {
-    exec(cmd, (error, stdout, stderr) => {
-      if (error) {
-        reject(stderr);
-      } else {
-        resolve(stdout);
-      }
+    execFile("aws", args, (error, stdout, stderr) => {
+      if (error) return reject(stderr);
+      resolve(stdout);
     });
   });
 }
 
-export async function run(input) {
-
-  if (input.action === "list") {
-    const output = await runCommand("aws lightsail get-instances");
-    return JSON.parse(output);
+function validateInstance(name) {
+  if (!ALLOWED_INSTANCES.includes(name)) {
+    throw new Error("Instance not allowed");
   }
-
-  if (input.action === "reboot") {
-    await runCommand(`aws lightsail reboot-instance --instance-name ${input.instance}`);
-    return { success: true, message: `${input.instance} reboot initiated` };
-  }
-
-  if (input.action === "start") {
-    await runCommand(`aws lightsail start-instance --instance-name ${input.instance}`);
-    return { success: true, message: `${input.instance} starting` };
-  }
-
-  if (input.action === "stop") {
-    await runCommand(`aws lightsail stop-instance --instance-name ${input.instance}`);
-    return { success: true, message: `${input.instance} stopping` };
-  }
-
-  return { success: false, message: "Invalid action" };
 }
 
+export async function run(input) {
+
+  if (input.action !== "list") {
+    validateInstance(input.instance);
+  }
+
+  switch (input.action) {
+
+    case "list":
+      return JSON.parse(
+        await runAws(["lightsail", "get-instances", "--region", REGION])
+      );
+
+    case "reboot":
+      await runAws([
+        "lightsail",
+        "reboot-instance",
+        "--instance-name",
+        input.instance,
+        "--region",
+        REGION
+      ]);
+      return { success: true, message: "Reboot initiated" };
+
+    case "start":
+      await runAws([
+        "lightsail",
+        "start-instance",
+        "--instance-name",
+        input.instance,
+        "--region",
+        REGION
+      ]);
+      return { success: true, message: "Start initiated" };
+
+    case "stop":
+      await runAws([
+        "lightsail",
+        "stop-instance",
+        "--instance-name",
+        input.instance,
+        "--region",
+        REGION
+      ]);
+      return { success: true, message: "Stop initiated" };
+
+    default:
+      throw new Error("Invalid action");
+  }
+}
