@@ -1,6 +1,6 @@
 import { execFile } from "child_process";
 
-const REGION = process.env.AWS_REGION || "";
+const REGION = process.env.AWS_REGION;
 
 const ALLOWED_INSTANCES =
   process.env.ALLOWED_INSTANCES?.split(",");
